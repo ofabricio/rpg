@@ -5,6 +5,7 @@
 #include "enemy.h"
 #include "hero.h"
 #include "sprite.h"
+#include "world.h"
 
 int main(int argc, char* argv[])
 {
@@ -15,6 +16,9 @@ int main(int argc, char* argv[])
     InitWindow(screenWidth, screenHeight, "rpg");
     SetWindowState(FLAG_WINDOW_RESIZABLE);
     SetTargetFPS(60);
+
+    World world = { 0 };
+    World_Init(&world);
 
     Hero hero = { 0 };
     Hero_Init(&hero, LoadTexture("assets/shieldman.png"));
@@ -32,6 +36,7 @@ int main(int argc, char* argv[])
     while (!WindowShouldClose()) {
 
         float dt = GetFrameTime();
+        Vector2 m = GetScreenToWorld2D(GetMousePosition(), camera);
 
         camera.zoom += GetMouseWheelMove() * dt * 10;
         if (camera.zoom >= 2.0f)
@@ -42,8 +47,13 @@ int main(int argc, char* argv[])
         Hero_Update(&hero, dt);
         Enemy_Update(&enemy, dt);
 
-        Vector2 m = GetScreenToWorld2D(GetMousePosition(), camera);
-        hero.pos = Vector2MoveTowards(hero.pos, m, dt * 100);
+        Vector2 p = { 0 };
+        int x = 0, y = 0;
+        World_PosToGrid(&world, m, &x, &y);
+        World_GridToPos(&world, x, y, &p);
+        DrawText(TextFormat("MouseInWorld: %.2f, %.2f", m.x, m.y), 10, 50, 20, WHITE);
+        DrawText(TextFormat("PosToGrid: %d, %d", x, y), 10, 70, 20, WHITE);
+        DrawText(TextFormat("GridToPos: %.2f, %.2f", p.x, p.y), 10, 90, 20, WHITE);
 
         BeginDrawing();
         {
@@ -52,6 +62,7 @@ int main(int argc, char* argv[])
             ClearBackground(BLACK);
             BeginMode2D(camera);
             {
+                World_Draw(&world, gameScale);
                 Hero_Draw(&hero, gameScale);
                 Enemy_Draw(&enemy, gameScale);
             }
@@ -60,7 +71,7 @@ int main(int argc, char* argv[])
             // UI draw.
 
             DrawFPS(10, 10);
-            DrawText(TextFormat("zoom: %.2f", camera.zoom), 10, 40, 10, SKYBLUE);
+            DrawText(TextFormat("Zoom: %.2f", camera.zoom), 10, 30, 20, SKYBLUE);
         }
         EndDrawing();
     }
