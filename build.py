@@ -8,7 +8,7 @@ if not os.path.isfile("raylib/src/libraylib.a"):
 def build_mac():
     # Build and run the game.
     build = " ".join([
-        "gcc main.c -std=c11 -Wall -o main",
+        "g++ main.cpp -std=c++20 -Wall -o main",
         "-Iraylib/src -Lraylib/src raylib/src/libraylib.a",
         "-framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL",
     ])
@@ -19,7 +19,7 @@ def build_mac():
 def build_win():
     # Build and run the game.
     build = " ".join([
-        "gcc main.c -std=c11 -Wall -o main.exe",
+        "g++ main.cpp -std=c++20 -Wall -o main.exe",
         "-Iraylib/src -Lraylib/src raylib/src/libraylib.a",
         "-lraylib -lgdi32 -lwinmm",
     ])

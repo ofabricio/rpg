@@ -2,32 +2,32 @@
 #include <raymath.h>
 #include <stdio.h>
 
-#include "enemy.h"
-#include "hero.h"
-#include "sprite.h"
-#include "world.h"
+#include "enemy.hpp"
+#include "hero.hpp"
+#include "sprite.hpp"
+#include "world.hpp"
 
 int main(int argc, char* argv[])
 {
+    const float spriteSize = 32.0f;
+    const int screenWidth = spriteSize * 48;
+    const int screenHeight = spriteSize * 30;
+
     const float gameScale = 2.0f;
-    const int screenWidth = 1280;
-    const int screenHeight = screenWidth / 16 * 9;
 
     InitWindow(screenWidth, screenHeight, "rpg");
     SetWindowState(FLAG_WINDOW_RESIZABLE);
     SetTargetFPS(60);
 
-    World world = { 0 };
-    World_Init(&world);
+    World world = {};
+    world.Init();
 
-    Hero hero = { 0 };
-    Hero_Init(&hero, LoadTexture("assets/shieldman.png"));
+    Hero hero(LoadTexture("assets/shieldman.png"));
 
-    Enemy enemy = { 0 };
-    Enemy_Init(&enemy, LoadTexture("assets/sprites.png"));
+    Enemy enemy(LoadTexture("assets/sprites.png"));
     enemy.pos = (Vector2) { 64, 0 };
 
-    Camera2D camera = { 0 };
+    Camera2D camera = {};
     camera.target = (Vector2) { 0 };
     camera.offset = (Vector2) { (float)screenWidth / 2.0f, (float)screenHeight / 2.0f };
     camera.rotation = 0.0f;
@@ -44,13 +44,13 @@ int main(int argc, char* argv[])
         if (camera.zoom <= 0.5f)
             camera.zoom = 0.5f;
 
-        Hero_Update(&hero, dt);
-        Enemy_Update(&enemy, dt);
+        hero.Update(dt);
+        enemy.Update(dt);
 
         Vector2 p = { 0 };
         int x = 0, y = 0;
-        World_PosToGrid(&world, m, &x, &y);
-        World_GridToPos(&world, x, y, &p);
+        world.PosToGrid(m, &x, &y);
+        world.GridToPos(x, y, &p);
         DrawText(TextFormat("MouseInWorld: %.2f, %.2f", m.x, m.y), 10, 50, 20, WHITE);
         DrawText(TextFormat("PosToGrid: %d, %d", x, y), 10, 70, 20, WHITE);
         DrawText(TextFormat("GridToPos: %.2f, %.2f", p.x, p.y), 10, 90, 20, WHITE);
@@ -62,9 +62,9 @@ int main(int argc, char* argv[])
             ClearBackground(BLACK);
             BeginMode2D(camera);
             {
-                World_Draw(&world, gameScale);
-                Hero_Draw(&hero, gameScale);
-                Enemy_Draw(&enemy, gameScale);
+                world.Draw(gameScale);
+                hero.Draw(gameScale);
+                enemy.Draw(gameScale);
             }
             EndMode2D();
 
