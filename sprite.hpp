@@ -18,7 +18,6 @@ public:
     bool loop;
 
 public:
-    Sheet() = default;
     Sheet(Texture2D texture, int id, float spriteW, float spriteH, Vector2 origin, int fps, int frames);
     void Play();
     void Update(float dt);
