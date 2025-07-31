@@ -1,16 +1,16 @@
-#ifndef CONSTS_H
-#define CONSTS_H
+#ifndef CONSTS_HPP
+#define CONSTS_HPP
 
-// Size of a grid cell.
-#define CELL 32
-// Width in grid cells.
+// Size of a tile.
+#define TILE 32
+// Width in tiles.
 #define GRID_COLS 24
-// Height in grid cells.
+// Height in tiles.
 #define GRID_ROWS 15
 
 // Screen width in pixels.
-#define SCREEN_W (GRID_COLS * CELL)
+#define SCREEN_W (GRID_COLS * TILE)
 // Screen height in pixels.
-#define SCREEN_H (GRID_ROWS * CELL)
+#define SCREEN_H (GRID_ROWS * TILE)
 
 #endif

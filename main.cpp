@@ -2,12 +2,12 @@
 #include <raymath.h>
 #include <stdio.h>
 
+#include "actor.hpp"
+#include "astar.hpp"
 #include "consts.hpp"
 #include "debug.hpp"
-#include "enemy.hpp"
-#include "grid.hpp"
-#include "hero.hpp"
-#include "sprite.hpp"
+#include "tilemap.hpp"
+#include "zone.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -17,18 +17,26 @@ int main(int argc, char* argv[])
     SetWindowState(FLAG_WINDOW_RESIZABLE);
     SetTargetFPS(60);
 
-    Grid grid(CELL, GRID_COLS, GRID_ROWS);
+    Zone zone = LoadZone(1);
 
-    Hero hero = {};
+    Actor hero = {};
+    hero.pos = zone.tmap.ToCenter(3, 8);
+    hero.name = "Hero";
 
-    Enemy enemy = {};
-    enemy.pos = Vector2(64, 0);
+    Actor enemy = {};
+    enemy.pos = zone.tmap.ToCenter(20, 8);
+    enemy.name = "Enemy";
 
     Camera2D camera = {};
     camera.target = Vector2(SCREEN_W / 2.0f, SCREEN_H / 2.0f);
-    camera.offset = Vector2(SCREEN_W * gameScale / 2.0f, SCREEN_H * gameScale / 2.0f);
+    camera.offset = Vector2(SCREEN_W / 2.0f * gameScale, SCREEN_H / 2.0f * gameScale);
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
+
+    auto path = astar::Find(zone.tmap, zone.tmap.ToPos(5, 5), zone.tmap.ToPos(20, 13));
+
+    zone.Add(&enemy);
+    zone.Add(&hero);
 
     while (!WindowShouldClose()) {
 
@@ -42,8 +50,7 @@ int main(int argc, char* argv[])
             camera.zoom = 0.5f;
         // camera.zoom = 2.0f;
 
-        hero.Update(dt);
-        enemy.Update(dt);
+        zone.Update(dt);
 
         BeginDrawing();
         {
@@ -52,15 +59,17 @@ int main(int argc, char* argv[])
             ClearBackground(BLACK);
             BeginMode2D(camera);
             {
-                grid.Draw(gameScale, SCREEN_W, SCREEN_H);
-                hero.Draw(gameScale);
-                enemy.Draw(gameScale);
+                zone.Draw();
 
-                auto [col, row] = grid.PosToGrid(m);
-                auto v = grid.GridToPos(col, row);
-                DrawRectangleLines(v.x, v.y, CELL, CELL, grid.IsInGrid(col, row) ? GREEN : RED);
+                auto [col, row] = zone.tmap.ToCell(m);
+                auto v = zone.tmap.ToPos(col, row);
+                DrawRectangleLines(v.x, v.y, TILE, TILE, zone.tmap.IsInGrid(col, row) ? GREEN : RED);
 
                 Debug::DrawPoint(Vector2(0, 0), SKYBLUE);
+
+                for (const auto& p : path) {
+                    DrawCircleV(p, 5, YELLOW);
+                }
             }
             EndMode2D();
 
@@ -68,12 +77,14 @@ int main(int argc, char* argv[])
 
             DrawFPS(10, 10);
             DrawText(TextFormat("Zoom: %.2f", camera.zoom), 10, 30, 20, SKYBLUE);
-            auto [col, row] = grid.PosToGrid(m);
-            auto p = grid.GridToPos(col, row);
+            auto [col, row] = zone.tmap.ToCell(m);
+            auto p = zone.tmap.ToPos(col, row);
             DrawText(TextFormat("MouseInWorld: %.2f, %.2f", m.x, m.y), 10, 50, 20, WHITE);
             DrawText(TextFormat("Grid RowCol: %d, %d", col, row), 10, 70, 20, WHITE);
             DrawText(TextFormat("Grid Pos: %.2f, %.2f", p.x, p.y), 10, 90, 20, WHITE);
-            DrawText(TextFormat("Grid ID: %d", grid.GridToID(col, row)), 10, 110, 20, WHITE);
+            DrawText(TextFormat("Grid ID: %d", zone.tmap.ToId(col, row)), 10, 110, 20, WHITE);
+            DrawText(TextFormat("Obstacle: %d", zone.tmap.IsObstacle(col, row)), 10, 130, 20, WHITE);
+            DrawText(TextFormat("Waypoint: %d", zone.tmap.GetWaypoint(col, row)), 10, 150, 20, WHITE);
         }
         EndDrawing();
     }

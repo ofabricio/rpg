@@ -8,24 +8,24 @@ if not os.path.isfile("raylib/src/libraylib.a"):
 def build_mac():
     # Build and run the game.
     build = " ".join([
-        "g++ main.cpp -std=c++20 -Wall -o main",
+        "g++ main.cpp -std=c++20 -Wall -o rpg",
         "-Iraylib/src -Lraylib/src raylib/src/libraylib.a",
         "-framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL",
     ])
     os.system(build)
-    os.system("./main")
-    os.remove("./main")
+    os.system("./rpg")
+    os.remove("./rpg")
 
 def build_win():
     # Build and run the game.
     build = " ".join([
-        "g++ main.cpp -std=c++20 -Wall -o main.exe",
+        "g++ main.cpp -std=c++20 -Wall -o rpg.exe",
         "-Iraylib/src -Lraylib/src raylib/src/libraylib.a",
         "-lraylib -lgdi32 -lwinmm",
     ])
     os.system(build)
-    os.system("main.exe")
-    os.remove("main.exe")
+    os.system("rpg.exe")
+    os.remove("rpg.exe")
 
 # python build.py
 if platform.system() == "Windows":

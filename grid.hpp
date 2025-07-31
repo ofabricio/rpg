@@ -1,83 +1,96 @@
-#ifndef GRID_H
-#define GRID_H
+#ifndef GRID_HPP
+#define GRID_HPP
 
 #include <cmath>
 #include <raylib.h>
 #include <tuple>
 
-class Grid {
-    float cellSize;
-    int gridCols;
-    int gridRows;
+struct Grid {
+    int tile;
+    int cols;
+    int rows;
 
-public:
-    Grid(float cellSize, int gridCols, int gridRows);
-    std::tuple<int, int> PosToGrid(Vector2);
-    std::tuple<int, int> IDToGrid(int id);
-    Vector2 GridToPos(int col, int row);
-    Vector2 IDToPos(int id);
-    int GridToID(int col, int row);
+    Grid(int tile, int cols, int rows);
+    std::tuple<int, int> ToCell(Vector2);
+    std::tuple<int, int> ToCell(int);
+    Vector2 ToPos(int col, int row);
+    Vector2 ToPos(int);
+    Vector2 ToCenter(int col, int row);
+    Vector2 TileSize();
+    int ToId(int col, int row);
     bool IsInGrid(int col, int row);
-    Vector2 Cell();
-    void Draw(float scale, float w, float h);
+    bool IsInGrid(Vector2);
+    void Draw();
 };
 
-Grid::Grid(float cellSize, int gridCols, int gridRows)
+Grid::Grid(int tile, int cols, int rows)
+    : tile(tile)
+    , cols(cols)
+    , rows(rows)
 {
-    this->cellSize = cellSize;
-    this->gridCols = gridCols;
-    this->gridRows = gridRows;
 }
 
-std::tuple<int, int> Grid::PosToGrid(Vector2 p)
+std::tuple<int, int> Grid::ToCell(Vector2 v)
 {
-    int x = (int)(p.x / cellSize) - signbit(p.x);
-    int y = (int)(p.y / cellSize) - signbit(p.y);
-    return std::make_tuple(x, y);
+    int col = (v.x / tile) - signbit(v.x);
+    int row = (v.y / tile) - signbit(v.y);
+    return std::make_tuple(col, row);
 }
 
-std::tuple<int, int> Grid::IDToGrid(int id)
+std::tuple<int, int> Grid::ToCell(int id)
 {
-    int x = id % gridCols;
-    int y = id / gridCols;
-    return std::make_tuple(x, y);
+    int col = id % cols;
+    int row = id / cols;
+    return std::make_tuple(col, row);
 }
 
-Vector2 Grid::IDToPos(int id)
+Vector2 Grid::ToPos(int id)
 {
-    auto [col, row] = IDToGrid(id);
-    return GridToPos(col, row);
+    auto [col, row] = ToCell(id);
+    return ToPos(col, row);
 }
 
-Vector2 Grid::GridToPos(int col, int row)
+Vector2 Grid::ToPos(int col, int row)
 {
-    return Vector2(col * cellSize, row * cellSize);
+    return Vector2(col * tile, row * tile);
 }
 
-int Grid::GridToID(int col, int row)
+Vector2 Grid::ToCenter(int col, int row)
 {
-    if (!IsInGrid(col, row)) {
-        return -1;
-    }
-    return row * gridCols + col;
+    return Vector2(col * tile + tile / 2.0f, row * tile + tile / 2.0f);
+}
+
+int Grid::ToId(int col, int row)
+{
+    return row * cols + col;
 }
 
 bool Grid::IsInGrid(int col, int row)
 {
-    return col >= 0 && col < gridCols && row >= 0 && row < gridRows;
+    return col >= 0 && col < cols
+        && row >= 0 && row < rows;
 }
 
-Vector2 Grid::Cell()
+bool Grid::IsInGrid(Vector2 v)
 {
-    return Vector2(cellSize, cellSize);
+    auto [col, row] = ToCell(v);
+    return IsInGrid(col, row);
 }
 
-void Grid::Draw(float scale, float w, float h)
+Vector2 Grid::TileSize()
 {
-    for (size_t row = 0; row <= h; row += cellSize) {
+    return Vector2(tile, tile);
+}
+
+void Grid::Draw()
+{
+    float w = cols * tile;
+    float h = rows * tile;
+
+    for (size_t row = 0; row <= h; row += tile) {
         DrawLine(0, row, w, row, DARKGRAY);
     }
-    for (size_t col = 0; col <= w; col += cellSize) {
+    for (size_t col = 0; col <= w; col += tile) {
         DrawLine(col, 0, col, h, DARKGRAY);
     }
 }
